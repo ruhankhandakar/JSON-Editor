@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react';
-import Editor from '@monaco-editor/react';
+import Editor, { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
 import { ValidationError } from '@/types';
 
@@ -61,6 +61,9 @@ const JsonEditor = memo(
         allowComments: false,
         schemas: [],
       });
+
+      const markers = getMarkers();
+      monaco.editor.setModelMarkers(editor.getModel()!, 'json', markers);
     };
 
     const getMarkers = useCallback((): monaco.editor.IMarkerData[] => {
@@ -113,7 +116,6 @@ const JsonEditor = memo(
               autoClosingBrackets: 'always',
               autoClosingQuotes: 'always',
             }}
-            markers={getMarkers()}
           />
         </div>
       </div>

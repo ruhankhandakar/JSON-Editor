@@ -7,7 +7,6 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
 
 import { getInitialValue } from '@/lib/utils';
 import DynamicForm from './components/JSONValidator/DynamicForm';
@@ -195,7 +194,11 @@ export default function App() {
               {error && <p className="text-red-500 mt-2">{error}</p>}
             </div>
             {isJsonView ? (
-              <JsonEditor value={jsonData} onChange={handleJsonChange} />
+              <JsonEditor
+                value={jsonData}
+                onChange={handleJsonChange}
+                validationErrors={validationErrors}
+              />
             ) : (
               <DynamicForm
                 schema={parsedSchema}
