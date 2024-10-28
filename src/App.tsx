@@ -41,14 +41,19 @@ export default function App() {
   const [jsonData, setJsonData] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submittedData, setSubmittedData] = useState<FormState | null>(null);
+  const [validationErrors, setValidationErrors] =
+    useState<ValidationError | null>(null);
 
   useEffect(() => {
     try {
       if (schema) {
         const parsed = JSON.parse(schema);
         setParsedSchema(parsed);
-        setFormState(getInitialValue(parsed));
+        const initialState = getInitialValue(parsed);
+        setFormState(initialState);
+        setJsonData(JSON.stringify(initialState, null, 2));
         setError(null);
+        setValidationErrors(null);
       }
     } catch (e) {
       setError('Invalid schema JSON');
@@ -62,16 +67,24 @@ export default function App() {
     }
   }, [formState, isJsonView]);
 
-  const handleJsonChange = useCallback((value: string) => {
-    setJsonData(value);
-    try {
-      const parsed = JSON.parse(value);
-      setFormState(parsed);
-      setError(null);
-    } catch (e) {
-      setError('Invalid JSON data');
-    }
-  }, []);
+  const handleJsonChange = useCallback(
+    (value: string) => {
+      setJsonData(value);
+      try {
+        const parsed = JSON.parse(value);
+        setFormState(parsed);
+        setError(null);
+        // Validate as user types in JSON view
+        if (parsedSchema) {
+          const errors = validateFormState(parsedSchema, parsed);
+          setValidationErrors(errors);
+        }
+      } catch (e) {
+        setError('Invalid JSON data');
+      }
+    },
+    [parsedSchema],
+  );
 
   const validateFormState = (
     schema: SchemaType | null,
@@ -129,15 +142,17 @@ export default function App() {
   };
 
   const handleSubmit = () => {
-    setError(null);
-    const validationErrors = validateFormState(parsedSchema, formState);
-    if (validationErrors) {
-      console.log('Validation errors:', validationErrors);
-      setError('Please fix the validation errors before submitting.');
-    } else {
-      console.log(formState);
-      setSubmittedData(formState); // Set the submitted data
-      setError(null); // Clear any previous errors
+    if (parsedSchema) {
+      const errors = validateFormState(parsedSchema, formState);
+      setValidationErrors(errors);
+      if (errors) {
+        setError('Please fix the validation errors before submitting.');
+      } else {
+        console.log(formState);
+        setSubmittedData(formState);
+        setError(null);
+        setValidationErrors(null);
+      }
     }
   };
 
