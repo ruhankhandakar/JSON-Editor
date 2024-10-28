@@ -32,7 +32,6 @@ const sampleJson = {
   },
 } as SchemaType;
 
-// Main App Component
 export default function App() {
   const [schema, setSchema] = useState<string>('');
   const [parsedSchema, setParsedSchema] = useState<SchemaType | null>(null);
@@ -40,6 +39,7 @@ export default function App() {
   const [isJsonView, setIsJsonView] = useState(false);
   const [jsonData, setJsonData] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [submittedData, setSubmittedData] = useState<FormState | null>(null);
 
   useEffect(() => {
     try {
@@ -109,7 +109,10 @@ export default function App() {
             }
             break;
           case 'date':
-            if (typeof formState !== 'string' || isNaN(Date.parse(formState))) {
+            if (
+              typeof formState !== 'string' ||
+              (formState && isNaN(Date.parse(formState)))
+            ) {
               errors[path] = 'Expected a valid date string';
             }
             break;
@@ -126,13 +129,14 @@ export default function App() {
 
   const handleSubmit = () => {
     setError(null);
-    const validationErrors = validateFormState(sampleJson, formState);
+    const validationErrors = validateFormState(parsedSchema, formState);
     if (validationErrors) {
       console.log('Validation errors:', validationErrors);
       setError('Please fix the validation errors before submitting.');
     } else {
       console.log(formState);
-      setError(null);
+      setSubmittedData(formState); // Set the submitted data
+      setError(null); // Clear any previous errors
     }
   };
 
@@ -202,6 +206,18 @@ export default function App() {
               Submit
             </Button>
           </CardFooter>
+        </Card>
+      )}
+      {submittedData && (
+        <Card>
+          <CardHeader>
+            <h2 className="text-2xl font-bold">Submitted Data</h2>
+          </CardHeader>
+          <CardContent>
+            <pre className="whitespace-pre-wrap font-mono">
+              {JSON.stringify(submittedData, null, 2)}
+            </pre>
+          </CardContent>
         </Card>
       )}
     </div>
