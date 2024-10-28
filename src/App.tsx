@@ -163,7 +163,7 @@ export default function App() {
           <h2 className="text-2xl font-bold">Schema Definition</h2>
         </CardHeader>
         <CardContent>
-          <JsonEditor value={schema} onChange={setSchema} height="200px" />
+          <JsonEditor value={schema} onChange={setSchema} height="300px" />
           <Button
             onClick={() => {
               setSchema(JSON.stringify(sampleJson, null, 2));
