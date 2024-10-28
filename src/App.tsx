@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { getInitialValue } from '@/lib/utils';
 import DynamicForm from './components/JSONValidator/DynamicForm';
 import { FormState, SchemaType, ValidationError } from './types';
+import JsonEditor from './components/JSONValidator/JSONEditor';
 
 const sampleJson = {
   isActive: 'boolean',
@@ -73,7 +74,7 @@ export default function App() {
   }, []);
 
   const validateFormState = (
-    schema: SchemaType,
+    schema: SchemaType | null,
     formState: FormState,
   ): ValidationError | null => {
     const errors: ValidationError = {};
@@ -147,12 +148,7 @@ export default function App() {
           <h2 className="text-2xl font-bold">Schema Definition</h2>
         </CardHeader>
         <CardContent>
-          <Textarea
-            value={schema}
-            onChange={(e) => setSchema(e.target.value)}
-            placeholder="Enter your schema JSON..."
-            className="font-mono min-h-[200px]"
-          />
+          <JsonEditor value={schema} onChange={setSchema} height="200px" />
           <Button
             onClick={() => {
               setSchema(JSON.stringify(sampleJson, null, 2));
@@ -184,11 +180,7 @@ export default function App() {
               {error && <p className="text-red-500 mt-2">{error}</p>}
             </div>
             {isJsonView ? (
-              <Textarea
-                value={jsonData}
-                onChange={(e) => handleJsonChange(e.target.value)}
-                className="font-mono min-h-[400px]"
-              />
+              <JsonEditor value={jsonData} onChange={handleJsonChange} />
             ) : (
               <DynamicForm
                 schema={parsedSchema}
