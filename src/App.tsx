@@ -11,23 +11,26 @@ import { Textarea } from '@/components/ui/textarea';
 
 import { getInitialValue } from '@/lib/utils';
 import DynamicForm from './components/JSONValidator/DynamicForm';
+import { FormState, SchemaType, ValidationError } from './types';
 
-const sampleJson = `{
-  "isActive": "boolean",
-  "username": "string",
-  "age": "number",
-  "joinDate": "date",
-  "hobbies": [{
-    "booleanField": "boolean",
-    "stringField": "string"
-  }],
-  "address": {
-    "isDefault": "boolean",
-    "street": "string",
-    "number": "number",
-    "moveInDate": "date"
-  }
-}`;
+const sampleJson = {
+  isActive: 'boolean',
+  username: 'string',
+  age: 'number',
+  joinDate: 'date',
+  hobbies: [
+    {
+      booleanField: 'boolean',
+      stringField: 'string',
+    },
+  ],
+  address: {
+    isDefault: 'boolean',
+    street: 'string',
+    number: 'number',
+    moveInDate: 'date',
+  },
+} as SchemaType;
 
 // Main App Component
 export default function App() {
@@ -69,6 +72,70 @@ export default function App() {
     }
   }, []);
 
+  const validateFormState = (
+    schema: SchemaType,
+    formState: FormState,
+  ): ValidationError | null => {
+    const errors: ValidationError = {};
+
+    const validate = (schema: any, formState: any, path: string) => {
+      if (Array.isArray(schema)) {
+        if (!Array.isArray(formState)) {
+          errors[path] = 'Expected an array';
+        } else {
+          formState.forEach((item, index) => {
+            validate(schema[0], item, `${path}.${index}`);
+          });
+        }
+      } else if (typeof schema === 'object') {
+        for (const key in schema) {
+          validate(schema[key], formState[key], `${path}.${key}`);
+        }
+      } else {
+        switch (schema) {
+          case 'boolean':
+            if (typeof formState !== 'boolean') {
+              errors[path] = 'Expected a boolean';
+            }
+            break;
+          case 'number':
+            if (typeof formState !== 'number') {
+              errors[path] = 'Expected a number';
+            }
+            break;
+          case 'string':
+            if (typeof formState !== 'string') {
+              errors[path] = 'Expected a string';
+            }
+            break;
+          case 'date':
+            if (typeof formState !== 'string' || isNaN(Date.parse(formState))) {
+              errors[path] = 'Expected a valid date string';
+            }
+            break;
+          default:
+            break;
+        }
+      }
+    };
+
+    validate(schema, formState, '');
+
+    return Object.keys(errors).length > 0 ? errors : null;
+  };
+
+  const handleSubmit = () => {
+    setError(null);
+    const validationErrors = validateFormState(sampleJson, formState);
+    if (validationErrors) {
+      console.log('Validation errors:', validationErrors);
+      setError('Please fix the validation errors before submitting.');
+    } else {
+      console.log(formState);
+      setError(null);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <Card>
@@ -84,13 +151,12 @@ export default function App() {
           />
           <Button
             onClick={() => {
-              setSchema(sampleJson);
+              setSchema(JSON.stringify(sampleJson, null, 2));
             }}
             className="ml-2 mt-2"
           >
             Load Sample
           </Button>
-          {error && <p className="text-red-500 mt-2">{error}</p>}
         </CardContent>
       </Card>
 
@@ -110,6 +176,9 @@ export default function App() {
             </div>
           </CardHeader>
           <CardContent>
+            <div className="text-center py-2">
+              {error && <p className="text-red-500 mt-2">{error}</p>}
+            </div>
             {isJsonView ? (
               <Textarea
                 value={jsonData}
@@ -126,7 +195,7 @@ export default function App() {
           </CardContent>
           <CardFooter>
             <Button
-              onClick={() => console.log(formState)}
+              onClick={handleSubmit}
               className="w-full"
               disabled={!!error}
             >
