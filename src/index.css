@@ -9,7 +9,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -93,4 +93,17 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  background-color: #fff;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  background-color: #fff;
 }
